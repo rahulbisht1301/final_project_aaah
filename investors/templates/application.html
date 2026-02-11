@@ -1,0 +1,15 @@
+<h2>Investment Applications</h2>
+
+{% for app in applications %}
+    <div>
+        <h3>{{ app.startup.name }}</h3>
+        <p>Amount Requested: {{ app.amount_requested }}</p>
+        <p>Equity Offered: {{ app.equity_offered }}%</p>
+        <p>Status: {{ app.status }}</p>
+        <p>{{ app.message }}</p>
+
+        <a href="{% url 'update_application_status' app.id 'ACCEPTED' %}">Accept</a>
+        <a href="{% url 'update_application_status' app.id 'REJECTED' %}">Reject</a>
+        <a href="{% url 'update_application_status' app.id 'MORE_INFO' %}">More Info</a>
+    </div>
+{% endfor %}
