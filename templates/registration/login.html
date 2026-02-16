@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="section" style="padding: 60px 20px;">
+    <div style="max-width: 400px; margin: 0 auto;">
+        <div class="card" style="width: 100%; max-width: 100%;">
+            <h2 style="margin-bottom: 20px; text-align: center;">Login</h2>
+            
+            {% if form.errors %}
+            <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+                Invalid username or password.
+            </div>
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Username</label>
+                    <input type="text" name="username" required 
+                           style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Password</label>
+                    <input type="password" name="password" required 
+                           style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+                </div>
+                
+                <button type="submit" class="btn" style="width: 100%; border: none; cursor: pointer; font-size: 16px;">
+                    Login
+                </button>
+            </form>
+            
+            <p style="text-align: center; margin-top: 20px; color: #666;">
+                Don't have an account? <a href="{% url 'register' %}">Register here</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

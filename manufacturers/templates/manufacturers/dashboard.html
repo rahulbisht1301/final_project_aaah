@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero" style="padding: 40px 20px;">
+    <h1>Manufacturer Dashboard</h1>
+    <p>Welcome back, {% if request.user.manufacturerprofile.company_name %}{{ request.user.manufacturerprofile.company_name }}{% else %}{{ request.user.username }}{% endif %}!</p>
+    <div style="margin-top: 15px;">
+        <a href="{% url 'manufacturer_profile' %}" class="btn" style="background: #17a2b8; margin-right: 10px;">Edit Profile</a>
+        <form method="post" action="{% url 'manufacturer_logout' %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn" style="background: #dc3545; border: none; cursor: pointer;">Logout</button>
+        </form>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Quick Actions</h2>
+    <div class="cards">
+        <a href="{% url 'startup_list' %}" class="card" style="text-decoration: none; color: inherit;">
+            <h3>🔍 Browse Startups</h3>
+            <p>Explore innovative startups and connect with potential partners.</p>
+        </a>
+        <a href="{% url 'connection_history' %}" class="card" style="text-decoration: none; color: inherit;">
+            <h3>📋 Connection History</h3>
+            <p>View all your connection requests and their status.</p>
+        </a>
+        <a href="{% url 'manufacturer_profile' %}" class="card" style="text-decoration: none; color: inherit;">
+            <h3>⚙️ Edit Profile</h3>
+            <p>Update your company information and contact details.</p>
+        </a>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Recent Startups</h2>
+    <div class="cards">
+        {% for startup in startups %}
+        <div class="card">
+            <h3>{{ startup.name }}</h3>
+            <p><strong>Niche:</strong> {{ startup.niche }}</p>
+            <p><strong>Stage:</strong> {{ startup.stage }}</p>
+            <p>{{ startup.vision|truncatewords:20 }}</p>
+            <a href="{% url 'startup_detail' startup.id %}" class="btn" style="display: inline-block; margin-top: 10px;">View Details</a>
+        </div>
+        {% empty %}
+        <p>No startups available yet.</p>
+        {% endfor %}
+    </div>
+</div>
+
+{% if connection_requests %}
+<div class="section">
+    <h2>Recent Connection Requests</h2>
+    <div class="cards">
+        {% for req in connection_requests %}
+        <div class="card">
+            <h3>{{ req.startup.name }}</h3>
+            <p><strong>Status:</strong> 
+                <span style="padding: 3px 10px; border-radius: 15px; font-size: 12px;
+                    {% if req.status == 'ACCEPTED' %}background: #d4edda; color: #155724;
+                    {% elif req.status == 'REJECTED' %}background: #f8d7da; color: #721c24;
+                    {% else %}background: #fff3cd; color: #856404;{% endif %}">
+                    {{ req.status }}
+                </span>
+            </p>
+            <p><strong>Sent:</strong> {{ req.created_at|date:"M d, Y" }}</p>
+            <a href="{% url 'startup_detail' req.startup.id %}" class="btn" style="display: inline-block; margin-top: 10px;">View</a>
+        </div>
+        {% endfor %}
+    </div>
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="{% url 'connection_history' %}" class="btn">View All Connections</a>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -10,6 +10,11 @@ class Startup(models.Model):
     vision = models.TextField()
     pitch_deck = models.FileField(upload_to='pitch_decks/')
     demo_video = models.URLField(blank=True)
+    
+    # Contact information
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+    website = models.URLField(blank=True)
 
     approved = models.BooleanField(default=False)
 

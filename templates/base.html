@@ -86,8 +86,23 @@
 <div class="navbar">
     <div class="logo">VentureHub</div>
     <div class="nav-links">
-        <a href="#">Login</a>
-        <a href="#">Register</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'role_redirect' %}">Dashboard</a>
+            {% if user.role == 'MANUFACTURER' %}
+            <form method="post" action="{% url 'manufacturer_logout' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" style="background: none; border: none; color: black; cursor: pointer; font-size: inherit; font-family: inherit;">Logout</button>
+            </form>
+            {% else %}
+            <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" style="background: none; border: none; color: black; cursor: pointer; font-size: inherit; font-family: inherit;">Logout</button>
+            </form>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'register' %}">Register</a>
+        {% endif %}
     </div>
 </div>
 

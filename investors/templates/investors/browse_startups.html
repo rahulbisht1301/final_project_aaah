@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero" style="padding: 40px 20px;">
+    <h1>Browse Startups</h1>
+    <p>Discover innovative startups looking for investment</p>
+</div>
+
+<div class="section" style="padding: 20px 50px;">
+    <!-- Filter Form -->
+    <form method="get" style="margin-bottom: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+        <input type="text" name="niche" placeholder="Filter by niche..." value="{{ request.GET.niche }}" 
+               style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; width: 200px;">
+        <input type="text" name="stage" placeholder="Filter by stage..." value="{{ request.GET.stage }}"
+               style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; width: 200px;">
+        <button type="submit" class="btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">Filter</button>
+        <a href="{% url 'browse_startups' %}" style="padding: 10px 15px; text-decoration: none; color: #666;">Clear</a>
+    </form>
+
+    <div class="cards">
+        {% for startup in startups %}
+        <div class="card">
+            <h3>{{ startup.name }}</h3>
+            <p><strong>Niche:</strong> {{ startup.niche }}</p>
+            <p><strong>Stage:</strong> {{ startup.stage }}</p>
+            <p><strong>Valuation:</strong> ${{ startup.valuation|floatformat:0 }}</p>
+            <p style="margin-top: 10px;">{{ startup.vision|truncatewords:15 }}</p>
+            
+            <div style="margin-top: 15px;">
+                <a href="{% url 'startup_detail_investor' startup.id %}" class="btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">View Details</a>
+            </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; padding: 40px; width: 100%;">
+            <p>No startups found matching your criteria.</p>
+            <a href="{% url 'browse_startups' %}" class="btn" style="display: inline-block; margin-top: 15px;">View All Startups</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div style="text-align: center; padding: 20px;">
+    <a href="{% url 'investor_dashboard' %}" style="color: #666; text-decoration: none;">← Back to Dashboard</a>
+</div>
+
+{% endblock %}

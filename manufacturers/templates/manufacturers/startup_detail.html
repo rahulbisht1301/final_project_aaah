@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="section" style="padding: 40px 50px;">
+    <div style="max-width: 800px; margin: 0 auto;">
+        
+        <div class="card" style="width: 100%; max-width: 100%; text-align: left;">
+            <h1 style="margin-bottom: 20px;">{{ startup.name }}</h1>
+                
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                <div>
+                    <p style="color: #666; margin-bottom: 5px;">Niche</p>
+                    <p style="font-size: 18px; font-weight: bold;">{{ startup.niche }}</p>
+                </div>
+                <div>
+                    <p style="color: #666; margin-bottom: 5px;">Stage</p>
+                    <p style="font-size: 18px; font-weight: bold;">{{ startup.stage }}</p>
+                </div>
+                <div>
+                    <p style="color: #666; margin-bottom: 5px;">Valuation</p>
+                    <p style="font-size: 18px; font-weight: bold;">${{ startup.valuation|floatformat:0 }}</p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h3>Vision</h3>
+                <p style="line-height: 1.6;">{{ startup.vision }}</p>
+            </div>
+            
+            {% if startup.demo_video %}
+            <div style="margin-bottom: 30px;">
+                <h3>Demo Video</h3>
+                <a href="{{ startup.demo_video }}" target="_blank" class="btn" style="display: inline-block;">
+                    🎬 Watch Demo
+                </a>
+            </div>
+            {% endif %}
+            
+            {% if startup.website %}
+            <div style="margin-bottom: 30px;">
+                <h3>Website</h3>
+                <a href="{{ startup.website }}" target="_blank" style="color: #007bff;">{{ startup.website }}</a>
+            </div>
+            {% endif %}
+            
+            <!-- Contact Information -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 30px;">
+                <h3>Contact Information</h3>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px;">
+                    {% if startup.email %}
+                    <a href="mailto:{{ startup.email }}" class="btn" style="background: #28a745;">
+                        📧 {{ startup.email }}
+                    </a>
+                    {% endif %}
+                    
+                    {% if startup.phone %}
+                    <a href="tel:{{ startup.phone }}" class="btn" style="background: #17a2b8;">
+                        📞 {{ startup.phone }}
+                    </a>
+                    {% endif %}
+                    
+                    {% if not startup.email and not startup.phone %}
+                    <p style="color: #666;">Contact information not provided. Send a connection request below.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Connection Request Section -->
+            <div style="border-top: 1px solid #eee; padding-top: 20px;">
+                {% if existing_request %}
+                <div style="background: {% if existing_request.status == 'ACCEPTED' %}#d4edda{% elif existing_request.status == 'REJECTED' %}#f8d7da{% else %}#fff3cd{% endif %}; padding: 15px; border-radius: 5px;">
+                    <p><strong>Connection Request Status:</strong> {{ existing_request.status }}</p>
+                    {% if existing_request.message %}
+                    <p><strong>Your Message:</strong> {{ existing_request.message }}</p>
+                    {% endif %}
+                </div>
+                {% else %}
+                <h3>Send Connection Request</h3>
+                <form method="post" action="{% url 'connect_to_startup' startup.id %}">
+                    {% csrf_token %}
+                    <textarea name="message" placeholder="Introduce yourself and explain why you'd like to connect..." 
+                              style="width: 100%; padding: 15px; border: 1px solid #ddd; border-radius: 5px; min-height: 100px; margin-bottom: 15px;"></textarea>
+                    <button type="submit" class="btn">Send Connection Request</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="{% url 'startup_list' %}" style="color: #666; text-decoration: none;">← Back to Startups List</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

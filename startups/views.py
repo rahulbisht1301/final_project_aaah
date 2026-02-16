@@ -1,9 +1,159 @@
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login, authenticate, logout
 from .models import InvestmentApplication, Startup
 from investors.models import InvestorProfile
-from django.contrib.auth.decorators import login_required
+from manufacturers.models import ConnectionRequest
+from accounts.models import User
 
-@login_required
+
+def startup_login(request):
+    """Login page for startups."""
+    if request.user.is_authenticated:
+        if request.user.is_startup():
+            return redirect('startup_dashboard')
+        return redirect('home')
+    
+    error = None
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            if user.is_startup():
+                login(request, user)
+                return redirect('startup_dashboard')
+            else:
+                error = 'This account is not registered as a Startup.'
+        else:
+            error = 'Invalid username or password.'
+    
+    return render(request, 'startups/login.html', {'error': error})
+
+
+def startup_register(request):
+    """Registration page for startups."""
+    if request.user.is_authenticated:
+        if request.user.is_startup():
+            return redirect('startup_dashboard')
+        return redirect('home')
+    
+    error = None
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+        startup_name = request.POST.get('startup_name', '')
+        
+        if password != confirm_password:
+            error = 'Passwords do not match.'
+        elif User.objects.filter(username=username).exists():
+            error = 'Username already exists.'
+        elif User.objects.filter(email=email).exists():
+            error = 'Email already registered.'
+        else:
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                role='STARTUP'
+            )
+            
+            # Update startup profile with name
+            try:
+                startup = Startup.objects.get(founder=user)
+                startup.name = startup_name
+                startup.save()
+            except Startup.DoesNotExist:
+                Startup.objects.create(founder=user, name=startup_name, niche='', valuation=0, stage='', vision='')
+            
+            login(request, user)
+            return redirect('startup_dashboard')
+    
+    return render(request, 'startups/register.html', {'error': error})
+
+
+def startup_logout(request):
+    """Logout for startups."""
+    if request.method == 'POST':
+        logout(request)
+    return redirect('home')
+
+
+@login_required(login_url='startup_login')
+def startup_dashboard(request):
+    """Dashboard for startups."""
+    if not request.user.is_startup():
+        return redirect('home')
+    
+    try:
+        startup = Startup.objects.get(founder=request.user)
+    except Startup.DoesNotExist:
+        startup = Startup.objects.create(founder=request.user, name='', niche='', valuation=0, stage='', vision='')
+    
+    # Get connection requests from manufacturers
+    connection_requests = ConnectionRequest.objects.filter(startup=startup).order_by('-created_at')
+    
+    # Get investment applications
+    investment_apps = InvestmentApplication.objects.filter(startup=startup).order_by('-created_at')
+    
+    return render(request, 'startups/dashboard.html', {
+        'startup': startup,
+        'connection_requests': connection_requests,
+        'investment_apps': investment_apps,
+    })
+
+
+@login_required(login_url='startup_login')
+def startup_profile(request):
+    """Edit startup profile."""
+    if not request.user.is_startup():
+        return redirect('home')
+    
+    startup, created = Startup.objects.get_or_create(
+        founder=request.user,
+        defaults={'name': '', 'niche': '', 'valuation': 0, 'stage': '', 'vision': ''}
+    )
+    
+    if request.method == 'POST':
+        startup.name = request.POST.get('name', '')
+        startup.niche = request.POST.get('niche', '')
+        startup.valuation = request.POST.get('valuation', 0) or 0
+        startup.stage = request.POST.get('stage', '')
+        startup.vision = request.POST.get('vision', '')
+        startup.email = request.POST.get('email', '')
+        startup.phone = request.POST.get('phone', '')
+        startup.website = request.POST.get('website', '')
+        startup.demo_video = request.POST.get('demo_video', '')
+        startup.save()
+        
+        return redirect('startup_dashboard')
+    
+    return render(request, 'startups/profile.html', {'startup': startup})
+
+
+@login_required(login_url='startup_login')
+def handle_connection_request(request, request_id, action):
+    """Accept or reject connection requests from manufacturers."""
+    if not request.user.is_startup():
+        return redirect('home')
+    
+    startup = get_object_or_404(Startup, founder=request.user)
+    conn_request = get_object_or_404(ConnectionRequest, id=request_id, startup=startup)
+    
+    if action == 'accept':
+        conn_request.status = 'ACCEPTED'
+    elif action == 'reject':
+        conn_request.status = 'REJECTED'
+    
+    conn_request.save()
+    return redirect('startup_dashboard')
+
+
+@login_required(login_url='startup_login')
 def apply_to_investor(request, investor_id):
     if not request.user.is_startup():
         return redirect('home')
@@ -25,3 +175,4 @@ def apply_to_investor(request, investor_id):
         )
 
         return redirect('startup_dashboard')
+

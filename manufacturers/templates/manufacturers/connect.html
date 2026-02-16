@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="section" style="padding: 40px 50px;">
+    <div style="max-width: 600px; margin: 0 auto;">
+        <div class="card" style="width: 100%; max-width: 100%; text-align: left;">
+            <h2>Connect with {{ startup.name }}</h2>
+            <p style="color: #666; margin-bottom: 20px;">Send a message to introduce yourself and express your interest in connecting.</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Your Message</label>
+                    <textarea name="message" placeholder="Introduce yourself, describe your manufacturing capabilities, and explain how you could collaborate with this startup..." 
+                              style="width: 100%; padding: 15px; border: 1px solid #ddd; border-radius: 5px; min-height: 150px;" required></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 15px;">
+                    <button type="submit" class="btn">Send Request</button>
+                    <a href="{% url 'startup_detail' startup.id %}" style="padding: 10px 20px; text-decoration: none; color: #666;">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
