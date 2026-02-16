@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="hero" style="padding: 40px 20px;">
+<div class="hero" style="padding: 40px 20px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
     <h1>Startup Dashboard</h1>
     <p>Welcome back, {% if startup.name %}{{ startup.name }}{% else %}{{ request.user.username }}{% endif %}!</p>
     <div style="margin-top: 15px;">
-        <a href="{% url 'startup_profile' %}" class="btn" style="background: #17a2b8; margin-right: 10px;">Edit Profile</a>
+        <a href="{% url 'startup_profile' %}" class="btn" style="background: rgba(255,255,255,0.2); margin-right: 10px;">Edit Profile</a>
         <form method="post" action="{% url 'startup_logout' %}" style="display: inline;">
             {% csrf_token %}
-            <button type="submit" class="btn" style="background: #dc3545; border: none; cursor: pointer;">Logout</button>
+            <button type="submit" class="btn" style="background: rgba(220,53,69,0.9); border: none; cursor: pointer;">Logout</button>
         </form>
     </div>
 </div>
@@ -24,6 +24,28 @@
 {% endif %}
 
 <div class="section">
+    <h2>Overview</h2>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="number" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{ total_connections }}</div>
+            <div class="label">Connection Requests</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{ pending_connections }}</div>
+            <div class="label">Pending Connections</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{ total_apps }}</div>
+            <div class="label">Applications Sent</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{ accepted_apps }}</div>
+            <div class="label">Accepted</div>
+        </div>
+    </div>
+</div>
+
+<div class="section">
     <h2>Quick Actions</h2>
     <div class="cards">
         <a href="{% url 'startup_profile' %}" class="card" style="text-decoration: none; color: inherit;">
@@ -31,10 +53,10 @@
             <p>Update your startup information, pitch, and contact details.</p>
         </a>
         <div class="card">
-            <h3>📊 Your Stats</h3>
-            <p><strong>Connection Requests:</strong> {{ connection_requests.count }}</p>
-            <p><strong>Investment Applications:</strong> {{ investment_apps.count }}</p>
-            <p><strong>Profile Status:</strong> {% if startup.approved %}<span style="color: green;">Approved</span>{% else %}<span style="color: orange;">Pending</span>{% endif %}</p>
+            <h3>📊 Profile Status</h3>
+            <p><strong>Approval:</strong> {% if startup.approved %}<span style="color: green;">✓ Approved</span>{% else %}<span style="color: orange;">⏳ Pending</span>{% endif %}</p>
+            <p><strong>Name:</strong> {{ startup.name|default:"Not set" }}</p>
+            <p><strong>Stage:</strong> {{ startup.stage|default:"Not set" }}</p>
         </div>
     </div>
 </div>

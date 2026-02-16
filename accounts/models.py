@@ -18,3 +18,19 @@ class User(AbstractUser):
 
     def is_manufacturer(self):
         return self.role == 'MANUFACTURER'
+
+
+class Message(models.Model):
+    """Direct messages between users."""
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
+    subject = models.CharField(max_length=200)
+    content = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"From {self.sender.username} to {self.recipient.username}: {self.subject}"

@@ -9,27 +9,52 @@
 
 <div class="section">
     <h2>Who Are You?</h2>
+    <p style="color: #666; margin-bottom: 20px;">Choose your role to get started</p>
 
-    <div class="cards">
+    <div class="cards" style="justify-content: center;">
 
-        <div class="card">
-            <h3>💰 Investor</h3>
+        <a href="{% url 'investor_login' %}" class="card" style="text-decoration: none; color: inherit; text-align: center; cursor: pointer;">
+            <div style="font-size: 50px; margin-bottom: 15px;">💰</div>
+            <h3>Investor</h3>
             <p>Discover promising startups and invest smartly.</p>
-            <a href="{% url 'investor_login' %}" class="btn">Join as Investor</a>
-        </div>
+            <span class="btn" style="margin-top: 15px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">Get Started</span>
+        </a>
 
-        <div class="card">
-            <h3>🚀 Startup</h3>
+        <a href="{% url 'startup_login' %}" class="card" style="text-decoration: none; color: inherit; text-align: center; cursor: pointer;">
+            <div style="font-size: 50px; margin-bottom: 15px;">🚀</div>
+            <h3>Startup</h3>
             <p>Raise funding and connect with manufacturers.</p>
-            <a href="{% url 'startup_login' %}" class="btn">List Your Startup</a>
-        </div>
+            <span class="btn btn-success" style="margin-top: 15px;">Get Started</span>
+        </a>
 
-        <div class="card">
-            <h3>🏭 Manufacturer</h3>
+        <a href="{% url 'manufacturer_login' %}" class="card" style="text-decoration: none; color: inherit; text-align: center; cursor: pointer;">
+            <div style="font-size: 50px; margin-bottom: 15px;">🏭</div>
+            <h3>Manufacturer</h3>
             <p>Find innovative startups and grow your business.</p>
-            <a href="{% url 'manufacturer_login' %}" class="btn">Join as Manufacturer</a>
-        </div>
+            <span class="btn" style="margin-top: 15px; background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">Get Started</span>
+        </a>
 
+    </div>
+</div>
+
+<div class="section" style="background: #f8f9fa; margin: 0; max-width: 100%; padding: 60px 20px;">
+    <h2>Why VentureHub?</h2>
+    <div class="cards" style="max-width: 1200px; margin: 30px auto 0;">
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 40px; margin-bottom: 10px;">🤝</div>
+            <h3>Connect</h3>
+            <p>Build meaningful connections between investors, startups, and manufacturers.</p>
+        </div>
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 40px; margin-bottom: 10px;">📈</div>
+            <h3>Grow</h3>
+            <p>Scale your business with the right partners and funding.</p>
+        </div>
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 40px; margin-bottom: 10px;">💡</div>
+            <h3>Innovate</h3>
+            <p>Turn ideas into reality with manufacturing partnerships.</p>
+        </div>
     </div>
 </div>
 

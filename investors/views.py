@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
+from django.contrib import messages
+from django.core.paginator import Paginator
 from startups.models import InvestmentApplication, Startup
-from .models import InvestorProfile
+from .models import InvestorProfile, FavoriteStartup
 from accounts.models import User
 
 
@@ -61,6 +63,7 @@ def investor_register(request):
             )
             
             login(request, user)
+            messages.success(request, f'Welcome to VentureHub, {username}! Your investor account has been created.')
             return redirect('investor_dashboard')
     
     return render(request, 'investors/register.html', {'error': error})
@@ -83,14 +86,22 @@ def investor_dashboard(request):
     
     # Get recent startups
     startups = Startup.objects.filter(approved=True)[:6]
+    total_startups = Startup.objects.filter(approved=True).count()
     
     # Get investment applications
-    applications = InvestmentApplication.objects.filter(investor=profile).order_by('-created_at')[:5]
+    applications = InvestmentApplication.objects.filter(investor=profile).order_by('-created_at')
+    total_applications = applications.count()
+    pending_applications = applications.filter(status='PENDING').count()
+    accepted_applications = applications.filter(status='ACCEPTED').count()
     
     return render(request, 'investors/dashboard.html', {
         'profile': profile,
         'startups': startups,
-        'applications': applications,
+        'applications': applications[:5],
+        'total_startups': total_startups,
+        'total_applications': total_applications,
+        'pending_applications': pending_applications,
+        'accepted_applications': accepted_applications,
     })
 
 
@@ -109,6 +120,7 @@ def investor_profile(request):
         profile.location = request.POST.get('location', '')
         profile.save()
         
+        messages.success(request, 'Profile updated successfully!')
         return redirect('investor_dashboard')
     
     return render(request, 'investors/profile.html', {'profile': profile})
@@ -122,6 +134,11 @@ def browse_startups(request):
     
     startups = Startup.objects.filter(approved=True)
     
+    # Search
+    search = request.GET.get('search')
+    if search:
+        startups = startups.filter(name__icontains=search)
+    
     # Filter by niche
     niche = request.GET.get('niche')
     if niche:
@@ -132,7 +149,19 @@ def browse_startups(request):
     if stage:
         startups = startups.filter(stage__icontains=stage)
     
-    return render(request, 'investors/browse_startups.html', {'startups': startups})
+    # Pagination
+    paginator = Paginator(startups, 9)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Get user's favorite startup IDs
+    favorite_ids = FavoriteStartup.objects.filter(user=request.user).values_list('startup_id', flat=True)
+    
+    return render(request, 'investors/browse_startups.html', {
+        'startups': page_obj,
+        'page_obj': page_obj,
+        'favorite_ids': list(favorite_ids),
+    })
 
 
 @login_required(login_url='investor_login')
@@ -172,5 +201,47 @@ def update_application_status(request, application_id, status):
     if status in ['ACCEPTED', 'REJECTED', 'MORE_INFO']:
         application.status = status
         application.save()
+        
+        if status == 'ACCEPTED':
+            messages.success(request, f'Application from {application.startup.name} accepted!')
+        elif status == 'REJECTED':
+            messages.info(request, f'Application from {application.startup.name} rejected.')
+        else:
+            messages.info(request, f'Requested more info from {application.startup.name}.')
 
     return redirect('investor_applications')
+
+
+@login_required(login_url='investor_login')
+def toggle_favorite(request, startup_id):
+    """Add or remove a startup from favorites."""
+    if not request.user.is_investor():
+        return redirect('home')
+    
+    startup = get_object_or_404(Startup, id=startup_id, approved=True)
+    favorite, created = FavoriteStartup.objects.get_or_create(
+        user=request.user,
+        startup=startup
+    )
+    
+    if created:
+        messages.success(request, f'{startup.name} added to favorites!')
+    else:
+        favorite.delete()
+        messages.info(request, f'{startup.name} removed from favorites.')
+    
+    # Redirect back to where they came from
+    next_url = request.GET.get('next', 'browse_startups')
+    return redirect(next_url)
+
+
+@login_required(login_url='investor_login')
+def saved_startups(request):
+    """View saved/favorite startups."""
+    if not request.user.is_investor():
+        return redirect('home')
+    
+    favorites = FavoriteStartup.objects.filter(user=request.user).select_related('startup')
+    startups = [fav.startup for fav in favorites]
+    
+    return render(request, 'investors/saved_startups.html', {'startups': startups})

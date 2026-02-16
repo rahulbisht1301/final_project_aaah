@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
+from django.contrib import messages
+from django.core.paginator import Paginator
 from startups.models import Startup
 from .models import ManufacturerProfile, ConnectionRequest
 from accounts.models import User
@@ -70,6 +72,7 @@ def manufacturer_register(request):
                 ManufacturerProfile.objects.create(user=user, company_name=company_name)
             
             login(request, user)
+            messages.success(request, f'Welcome to VentureHub, {username}! Your manufacturer account has been created.')
             return redirect('manufacturer_dashboard')
     
     return render(request, 'manufacturers/register.html', {'error': error})
@@ -90,17 +93,28 @@ def manufacturer_dashboard(request):
     
     # Get approved startups
     startups = Startup.objects.filter(approved=True)[:5]
+    total_startups = Startup.objects.filter(approved=True).count()
     
     # Get manufacturer's connection requests
     try:
         manufacturer = ManufacturerProfile.objects.get(user=request.user)
         connection_requests = ConnectionRequest.objects.filter(manufacturer=manufacturer).order_by('-created_at')[:5]
+        total_connections = ConnectionRequest.objects.filter(manufacturer=manufacturer).count()
+        pending_connections = ConnectionRequest.objects.filter(manufacturer=manufacturer, status='PENDING').count()
+        accepted_connections = ConnectionRequest.objects.filter(manufacturer=manufacturer, status='ACCEPTED').count()
     except ManufacturerProfile.DoesNotExist:
         connection_requests = []
+        total_connections = 0
+        pending_connections = 0
+        accepted_connections = 0
     
     return render(request, 'manufacturers/dashboard.html', {
         'startups': startups,
         'connection_requests': connection_requests,
+        'total_startups': total_startups,
+        'total_connections': total_connections,
+        'pending_connections': pending_connections,
+        'accepted_connections': accepted_connections,
     })
 
 
@@ -112,6 +126,11 @@ def startup_list(request):
     
     startups = Startup.objects.filter(approved=True)
     
+    # Search
+    search = request.GET.get('search')
+    if search:
+        startups = startups.filter(name__icontains=search)
+    
     # Filter by niche if provided
     niche = request.GET.get('niche')
     if niche:
@@ -122,8 +141,14 @@ def startup_list(request):
     if stage:
         startups = startups.filter(stage__icontains=stage)
     
+    # Pagination
+    paginator = Paginator(startups, 9)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     return render(request, 'manufacturers/startup_list.html', {
-        'startups': startups,
+        'startups': page_obj,
+        'page_obj': page_obj,
     })
 
 
@@ -161,14 +186,19 @@ def connect_to_startup(request, startup_id):
     manufacturer = get_object_or_404(ManufacturerProfile, user=request.user)
     
     if request.method == 'POST':
-        message = request.POST.get('message', '')
+        message_text = request.POST.get('message', '')
         
         # Create connection request if doesn't exist
-        ConnectionRequest.objects.get_or_create(
+        created = ConnectionRequest.objects.get_or_create(
             manufacturer=manufacturer,
             startup=startup,
-            defaults={'message': message}
-        )
+            defaults={'message': message_text}
+        )[1]
+        
+        if created:
+            messages.success(request, f'Connection request sent to {startup.name}!')
+        else:
+            messages.info(request, f'You have already sent a connection request to {startup.name}.')
         
         return redirect('startup_detail', startup_id=startup_id)
     
@@ -194,6 +224,7 @@ def manufacturer_profile(request):
         profile.phone = request.POST.get('phone', '')
         profile.save()
         
+        messages.success(request, 'Profile updated successfully!')
         return redirect('manufacturer_dashboard')
     
     return render(request, 'manufacturers/profile.html', {'profile': profile})

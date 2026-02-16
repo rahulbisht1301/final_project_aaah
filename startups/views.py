@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
+from django.contrib import messages
 from .models import InvestmentApplication, Startup
 from investors.models import InvestorProfile
 from manufacturers.models import ConnectionRequest
@@ -71,6 +72,7 @@ def startup_register(request):
                 Startup.objects.create(founder=user, name=startup_name, niche='', valuation=0, stage='', vision='')
             
             login(request, user)
+            messages.success(request, f'Welcome to VentureHub, {username}! Your startup account has been created.')
             return redirect('startup_dashboard')
     
     return render(request, 'startups/register.html', {'error': error})
@@ -96,14 +98,24 @@ def startup_dashboard(request):
     
     # Get connection requests from manufacturers
     connection_requests = ConnectionRequest.objects.filter(startup=startup).order_by('-created_at')
+    pending_connections = connection_requests.filter(status='PENDING').count()
+    total_connections = connection_requests.count()
     
     # Get investment applications
     investment_apps = InvestmentApplication.objects.filter(startup=startup).order_by('-created_at')
+    pending_apps = investment_apps.filter(status='PENDING').count()
+    accepted_apps = investment_apps.filter(status='ACCEPTED').count()
+    total_apps = investment_apps.count()
     
     return render(request, 'startups/dashboard.html', {
         'startup': startup,
-        'connection_requests': connection_requests,
-        'investment_apps': investment_apps,
+        'connection_requests': connection_requests[:5],
+        'investment_apps': investment_apps[:5],
+        'pending_connections': pending_connections,
+        'total_connections': total_connections,
+        'pending_apps': pending_apps,
+        'accepted_apps': accepted_apps,
+        'total_apps': total_apps,
     })
 
 
@@ -130,6 +142,7 @@ def startup_profile(request):
         startup.demo_video = request.POST.get('demo_video', '')
         startup.save()
         
+        messages.success(request, 'Profile updated successfully!')
         return redirect('startup_dashboard')
     
     return render(request, 'startups/profile.html', {'startup': startup})
@@ -146,8 +159,10 @@ def handle_connection_request(request, request_id, action):
     
     if action == 'accept':
         conn_request.status = 'ACCEPTED'
+        messages.success(request, f'Connection request from {conn_request.manufacturer.company_name} accepted!')
     elif action == 'reject':
         conn_request.status = 'REJECTED'
+        messages.info(request, f'Connection request from {conn_request.manufacturer.company_name} rejected.')
     
     conn_request.save()
     return redirect('startup_dashboard')
@@ -173,6 +188,7 @@ def apply_to_investor(request, investor_id):
             amount_requested=amount,
             equity_offered=equity
         )
-
+        
+        messages.success(request, 'Investment application submitted successfully!')
         return redirect('startup_dashboard')
 

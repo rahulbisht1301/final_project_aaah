@@ -11,4 +11,6 @@ urlpatterns = [
     path('startup/<int:startup_id>/', views.startup_detail_investor, name='startup_detail_investor'),
     path('applications/', views.investor_applications, name='investor_applications'),
     path('application/<int:application_id>/<str:status>/', views.update_application_status, name='update_application_status'),
+    path('favorite/<int:startup_id>/', views.toggle_favorite, name='toggle_favorite'),
+    path('saved/', views.saved_startups, name='saved_startups'),
 ]

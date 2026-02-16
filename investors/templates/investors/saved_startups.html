@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero" style="padding: 40px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+    <h1>Saved Startups</h1>
+    <p>Your favorite startups in one place</p>
+</div>
+
+<div class="section" style="padding: 20px 50px;">
+    <div class="cards">
+        {% for startup in startups %}
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <h3>{{ startup.name }}</h3>
+                <a href="{% url 'toggle_favorite' startup.id %}?next=saved_startups" style="font-size: 24px; text-decoration: none;" title="Remove from favorites">❤️</a>
+            </div>
+            <p><strong>Niche:</strong> {{ startup.niche }}</p>
+            <p><strong>Stage:</strong> {{ startup.stage }}</p>
+            <p><strong>Valuation:</strong> ${{ startup.valuation|floatformat:0 }}</p>
+            <p style="margin-top: 10px;">{{ startup.vision|truncatewords:15 }}</p>
+            
+            <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{% url 'startup_detail_investor' startup.id %}" class="btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">View Details</a>
+                
+                {% if startup.email %}
+                <a href="mailto:{{ startup.email }}" class="btn btn-success">📧</a>
+                {% endif %}
+                
+                {% if startup.phone %}
+                <a href="tel:{{ startup.phone }}" class="btn" style="background: #17a2b8;">📞</a>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; padding: 40px; width: 100%;">
+            <div style="font-size: 50px; margin-bottom: 15px;">💔</div>
+            <p style="color: #666;">You haven't saved any startups yet.</p>
+            <a href="{% url 'browse_startups' %}" class="btn" style="display: inline-block; margin-top: 15px;">Browse Startups</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div style="text-align: center; padding: 20px;">
+    <a href="{% url 'investor_dashboard' %}" style="color: #666; text-decoration: none;">← Back to Dashboard</a>
+</div>
+
+{% endblock %}

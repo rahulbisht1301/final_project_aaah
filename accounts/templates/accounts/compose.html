@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="section" style="padding: 40px 20px;">
+    <div style="max-width: 600px; margin: 0 auto;">
+        <div class="card" style="width: 100%; max-width: 100%;">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 28px;">✉️</span>
+                </div>
+                <h2 style="margin: 0;">Compose Message</h2>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">To</label>
+                    {% if recipient %}
+                    <input type="hidden" name="recipient_id" value="{{ recipient.id }}">
+                    <div style="padding: 12px; background: #f8f9fa; border-radius: 5px; border: 1px solid #ddd;">
+                        {{ recipient.username }} ({{ recipient.get_role_display }})
+                    </div>
+                    {% else %}
+                    <select name="recipient_id" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;">
+                        <option value="">Select recipient...</option>
+                        {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.username }} ({{ user.get_role_display }})</option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Subject</label>
+                    <input type="text" name="subject" required placeholder="Enter subject"
+                           style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px;">
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Message</label>
+                    <textarea name="content" required placeholder="Type your message here..." rows="8"
+                              style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px; resize: vertical;"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn" style="flex: 1; border: none; cursor: pointer; font-size: 16px; padding: 14px;">
+                        📤 Send Message
+                    </button>
+                    <a href="{% url 'inbox' %}" class="btn btn-secondary" style="flex: 1; text-align: center; padding: 14px;">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

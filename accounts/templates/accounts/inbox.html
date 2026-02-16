@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero" style="padding: 40px 20px;">
+    <h1>📬 Inbox</h1>
+    <p>You have {{ unread_count }} unread message{{ unread_count|pluralize }}</p>
+    <div style="margin-top: 15px;">
+        <a href="{% url 'compose_message' %}" class="btn">✉️ Compose New</a>
+        <a href="{% url 'sent_messages' %}" class="btn btn-secondary" style="margin-left: 10px;">📤 Sent Messages</a>
+    </div>
+</div>
+
+<div class="section">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>From</th>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for msg in messages_list %}
+                <tr style="{% if not msg.is_read %}font-weight: bold; background: #f8f9fa;{% endif %}">
+                    <td>{{ msg.sender.username }}</td>
+                    <td><a href="{% url 'view_message' msg.id %}" style="color: #667eea; text-decoration: none;">{{ msg.subject }}</a></td>
+                    <td>{{ msg.created_at|date:"M d, Y H:i" }}</td>
+                    <td>
+                        {% if msg.is_read %}
+                        <span class="status-badge status-approved">Read</span>
+                        {% else %}
+                        <span class="status-badge status-pending">New</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 40px; margin-bottom: 10px;">📭</div>
+                        Your inbox is empty.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div style="text-align: center; padding: 20px;">
+    <a href="{% url 'role_redirect' %}" style="color: #666; text-decoration: none;">← Back to Dashboard</a>
+</div>
+
+{% endblock %}

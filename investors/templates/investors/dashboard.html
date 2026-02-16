@@ -1,15 +1,37 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="hero" style="padding: 40px 20px;">
+<div class="hero" style="padding: 40px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
     <h1>Investor Dashboard</h1>
     <p>Welcome back, {{ request.user.username }}!</p>
     <div style="margin-top: 15px;">
-        <a href="{% url 'investor_profile' %}" class="btn" style="background: #17a2b8; margin-right: 10px;">Edit Profile</a>
+        <a href="{% url 'investor_profile' %}" class="btn" style="background: rgba(255,255,255,0.2); margin-right: 10px;">Edit Profile</a>
         <form method="post" action="{% url 'investor_logout' %}" style="display: inline;">
             {% csrf_token %}
-            <button type="submit" class="btn" style="background: #dc3545; border: none; cursor: pointer;">Logout</button>
+            <button type="submit" class="btn" style="background: rgba(220,53,69,0.9); border: none; cursor: pointer;">Logout</button>
         </form>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Overview</h2>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="number" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{ total_startups }}</div>
+            <div class="label">Available Startups</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{ total_applications }}</div>
+            <div class="label">Total Applications</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{ pending_applications }}</div>
+            <div class="label">Pending Review</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{ accepted_applications }}</div>
+            <div class="label">Accepted</div>
+        </div>
     </div>
 </div>
 
@@ -21,8 +43,12 @@
             <p>Discover innovative startups to invest in.</p>
         </a>
         <a href="{% url 'investor_applications' %}" class="card" style="text-decoration: none; color: inherit;">
-            <h3>📋 Applications</h3>
+            <h3>📋 Applications {% if pending_applications %}<span class="badge">{{ pending_applications }}</span>{% endif %}</h3>
             <p>Review investment applications from startups.</p>
+        </a>
+        <a href="{% url 'saved_startups' %}" class="card" style="text-decoration: none; color: inherit;">
+            <h3>❤️ Saved Startups</h3>
+            <p>View your favorite startups.</p>
         </a>
         <a href="{% url 'investor_profile' %}" class="card" style="text-decoration: none; color: inherit;">
             <h3>⚙️ Edit Profile</h3>

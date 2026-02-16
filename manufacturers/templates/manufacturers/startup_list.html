@@ -1,20 +1,19 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="hero" style="padding: 40px 20px;">
+<div class="hero" style="padding: 40px 20px; background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">
     <h1>Browse Startups</h1>
     <p>Discover innovative startups and connect with potential partners</p>
 </div>
 
 <div class="section" style="padding: 20px 50px;">
-    <!-- Filter Form -->
-    <form method="get" style="margin-bottom: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-        <input type="text" name="niche" placeholder="Filter by niche..." value="{{ request.GET.niche }}" 
-               style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; width: 200px;">
-        <input type="text" name="stage" placeholder="Filter by stage..." value="{{ request.GET.stage }}"
-               style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; width: 200px;">
-        <button type="submit" class="btn">Filter</button>
-        <a href="{% url 'startup_list' %}" style="padding: 10px 15px; text-decoration: none; color: #666;">Clear</a>
+    <!-- Search and Filter Form -->
+    <form method="get" class="search-bar">
+        <input type="text" name="search" placeholder="Search startups..." value="{{ request.GET.search }}" class="search-input">
+        <input type="text" name="niche" placeholder="Filter by niche..." value="{{ request.GET.niche }}" class="search-input" style="width: 180px;">
+        <input type="text" name="stage" placeholder="Filter by stage..." value="{{ request.GET.stage }}" class="search-input" style="width: 180px;">
+        <button type="submit" class="btn" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">🔍 Search</button>
+        <a href="{% url 'startup_list' %}" class="btn btn-secondary">Clear</a>
     </form>
 
     <div class="cards">
@@ -27,28 +26,42 @@
             <p style="margin-top: 10px;">{{ startup.vision|truncatewords:15 }}</p>
             
             <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
-                <a href="{% url 'startup_detail' startup.id %}" class="btn">View Details</a>
+                <a href="{% url 'startup_detail' startup.id %}" class="btn" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">View Details</a>
                 
                 {% if startup.email %}
-                <a href="mailto:{{ startup.email }}" class="btn" style="background: #28a745;">
-                    📧 Email
-                </a>
+                <a href="mailto:{{ startup.email }}" class="btn btn-success">📧</a>
                 {% endif %}
                 
                 {% if startup.phone %}
-                <a href="tel:{{ startup.phone }}" class="btn" style="background: #17a2b8;">
-                    📞 Call
-                </a>
+                <a href="tel:{{ startup.phone }}" class="btn" style="background: #17a2b8;">📞</a>
                 {% endif %}
             </div>
         </div>
         {% empty %}
-        <div style="text-align: center; padding: 40px;">
-            <p>No startups found matching your criteria.</p>
+        <div style="text-align: center; padding: 40px; width: 100%;">
+            <div style="font-size: 50px; margin-bottom: 15px;">🔍</div>
+            <p style="color: #666;">No startups found matching your criteria.</p>
             <a href="{% url 'startup_list' %}" class="btn" style="display: inline-block; margin-top: 15px;">View All Startups</a>
         </div>
         {% endfor %}
     </div>
+    
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.niche %}&niche={{ request.GET.niche }}{% endif %}{% if request.GET.stage %}&stage={{ request.GET.stage }}{% endif %}">« First</a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.niche %}&niche={{ request.GET.niche }}{% endif %}{% if request.GET.stage %}&stage={{ request.GET.stage }}{% endif %}">Previous</a>
+        {% endif %}
+        
+        <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.niche %}&niche={{ request.GET.niche }}{% endif %}{% if request.GET.stage %}&stage={{ request.GET.stage }}{% endif %}">Next</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.niche %}&niche={{ request.GET.niche }}{% endif %}{% if request.GET.stage %}&stage={{ request.GET.stage }}{% endif %}">Last »</a>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
 
 <div style="text-align: center; padding: 20px;">
