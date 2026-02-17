@@ -1,0 +1,52 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block content %}
+<h2 style="margin-bottom: 1.5rem; color: #2c3e50;">👥 Manage Users</h2>
+
+<div class="card">
+    <div class="search-box">
+        <form method="GET" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <select name="role">
+                <option value="all" {% if role_filter == 'all' %}selected{% endif %}>All Users</option>
+                <option value="INVESTOR" {% if role_filter == 'INVESTOR' %}selected{% endif %}>Investors</option>
+                <option value="STARTUP" {% if role_filter == 'STARTUP' %}selected{% endif %}>Startups</option>
+                <option value="MANUFACTURER" {% if role_filter == 'MANUFACTURER' %}selected{% endif %}>Manufacturers</option>
+            </select>
+            
+            <input type="text" name="search" placeholder="Search by username or email..." value="{{ search }}">
+            
+            <button type="submit">Search</button>
+        </form>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Joined</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+                <tr>
+                    <td><strong>{{ user.username }}</strong></td>
+                    <td>{{ user.email }}</td>
+                    <td><span class="badge badge-info">{{ user.role }}</span></td>
+                    <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                    <td>
+                        <a href="{% url 'user_detail' user.id %}" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">View</a>
+                        <a href="{% url 'delete_user' user.id %}" class="btn btn-danger" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;" onclick="return confirm('Are you sure?');">Delete</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #7f8c8d; padding: 2rem;">No users found</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

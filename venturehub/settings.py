@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'startups',
     'investors',
     'manufacturers',
+    'admin_dashboard',
 ]
 
 MIDDLEWARE = [

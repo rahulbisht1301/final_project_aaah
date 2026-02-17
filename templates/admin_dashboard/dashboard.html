@@ -1,0 +1,159 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 1fr 350px; gap: 2rem;">
+    <div>
+        <h2 style="margin-bottom: 1.5rem; color: #2c3e50;">Platform Overview</h2>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>{{ total_users }}</h3>
+                <p>Total Users</p>
+            </div>
+            
+            <div class="stat-card green">
+                <h3>{{ total_investors }}</h3>
+                <p>Investors</p>
+            </div>
+            
+            <div class="stat-card green">
+                <h3>{{ total_startups }}</h3>
+                <p>Startups</p>
+            </div>
+            
+            <div class="stat-card green">
+                <h3>{{ total_manufacturers }}</h3>
+                <p>Manufacturers</p>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>{{ approved_startups }}</h3>
+                <p>Approved Startups</p>
+            </div>
+            
+            <div class="stat-card orange">
+                <h3>{{ pending_startups }}</h3>
+                <p>Pending Approval</p>
+            </div>
+            
+            <div class="stat-card red">
+                <h3>{{ pending_applications }}</h3>
+                <p>Pending Applications</p>
+            </div>
+            
+            <div class="stat-card red">
+                <h3>{{ pending_connections }}</h3>
+                <p>Pending Connections</p>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div class="card">
+                <h3 style="margin-bottom: 1rem; color: #2c3e50;">📋 Recent Startups</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Startup Name</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for startup in recent_startups %}
+                            <tr>
+                                <td>{{ startup.name }}</td>
+                                <td>
+                                    {% if startup.approved %}
+                                        <span class="badge badge-success">Approved</span>
+                                    {% else %}
+                                        <span class="badge badge-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="2" style="text-align: center; color: #7f8c8d;">No startups yet</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="card">
+                <h3 style="margin-bottom: 1rem; color: #2c3e50;">👥 Recent Users</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in recent_users %}
+                            <tr>
+                                <td>{{ user.username }}</td>
+                                <td><span class="badge badge-info">{{ user.role }}</span></td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="2" style="text-align: center; color: #7f8c8d;">No users yet</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card" style="margin-top: 2rem;">
+            <h3 style="margin-bottom: 1rem; color: #2c3e50;">📨 Recent Applications</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Startup</th>
+                        <th>Investor</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in recent_applications %}
+                        <tr>
+                            <td>{{ app.startup.name }}</td>
+                            <td>{{ app.investor.user.username }}</td>
+                            <td>${{ app.amount_requested }}</td>
+                            <td>
+                                {% if app.status == 'PENDING' %}
+                                    <span class="badge badge-warning">Pending</span>
+                                {% elif app.status == 'ACCEPTED' %}
+                                    <span class="badge badge-success">Accepted</span>
+                                {% elif app.status == 'REJECTED' %}
+                                    <span class="badge badge-danger">Rejected</span>
+                                {% else %}
+                                    <span class="badge badge-info">{{ app.status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #7f8c8d;">No applications yet</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div>
+        <div class="card">
+            <h3 style="margin-bottom: 1.5rem; color: #2c3e50;">⚙️ Quick Actions</h3>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <a href="{% url 'manage_startups' %}" class="btn btn-primary" style="text-align: center;">Manage Startups</a>
+                <a href="{% url 'manage_users' %}" class="btn btn-primary" style="text-align: center;">Manage Users</a>
+                <a href="{% url 'manage_applications' %}" class="btn btn-primary" style="text-align: center;">View Applications</a>
+                <a href="{% url 'manage_connections' %}" class="btn btn-primary" style="text-align: center;">View Connections</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

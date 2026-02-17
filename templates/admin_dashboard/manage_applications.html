@@ -1,0 +1,62 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block content %}
+<h2 style="margin-bottom: 1.5rem; color: #2c3e50;">📨 Investment Applications</h2>
+
+<div class="card">
+    <div class="search-box">
+        <form method="GET" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <select name="status">
+                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Applications</option>
+                <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>Pending</option>
+                <option value="ACCEPTED" {% if status_filter == 'ACCEPTED' %}selected{% endif %}>Accepted</option>
+                <option value="REJECTED" {% if status_filter == 'REJECTED' %}selected{% endif %}>Rejected</option>
+                <option value="MORE_INFO" {% if status_filter == 'MORE_INFO' %}selected{% endif %}>More Info Requested</option>
+            </select>
+            
+            <input type="text" name="search" placeholder="Search by startup or investor..." value="{{ search }}">
+            
+            <button type="submit">Search</button>
+        </form>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Startup</th>
+                <th>Investor</th>
+                <th>Amount</th>
+                <th>Equity</th>
+                <th>Status</th>
+                <th>Applied</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in applications %}
+                <tr>
+                    <td><strong>{{ app.startup.name }}</strong></td>
+                    <td>{{ app.investor.user.username }}</td>
+                    <td>${{ app.amount_requested }}</td>
+                    <td>{{ app.equity_offered }}%</td>
+                    <td>
+                        {% if app.status == 'PENDING' %}
+                            <span class="badge badge-warning">⏳ Pending</span>
+                        {% elif app.status == 'ACCEPTED' %}
+                            <span class="badge badge-success">✓ Accepted</span>
+                        {% elif app.status == 'REJECTED' %}
+                            <span class="badge badge-danger">✗ Rejected</span>
+                        {% else %}
+                            <span class="badge badge-info">{{ app.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ app.created_at|date:"M d, Y" }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: #7f8c8d; padding: 2rem;">No applications found</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import User
+from .models import User, AdminProfile
 from investors.models import InvestorProfile
 from manufacturers.models import ManufacturerProfile
 from startups.models import Startup
@@ -14,3 +14,5 @@ def create_profile(sender, instance, created, **kwargs):
             ManufacturerProfile.objects.create(user=instance)
         elif instance.role == 'STARTUP':
             Startup.objects.create(founder=instance, name="", niche="", valuation=0, stage="", vision="")
+        elif instance.role == 'ADMIN':
+            AdminProfile.objects.create(user=instance)

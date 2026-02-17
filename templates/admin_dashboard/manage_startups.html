@@ -1,0 +1,64 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block content %}
+<h2 style="margin-bottom: 1.5rem; color: #2c3e50;">📋 Manage Startups</h2>
+
+<div class="card">
+    <div class="search-box">
+        <form method="GET" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <select name="filter">
+                <option value="all" {% if filter_type == 'all' %}selected{% endif %}>All Startups</option>
+                <option value="pending" {% if filter_type == 'pending' %}selected{% endif %}>Pending Approval</option>
+                <option value="approved" {% if filter_type == 'approved' %}selected{% endif %}>Approved</option>
+            </select>
+            
+            <input type="text" name="search" placeholder="Search by name or niche..." value="{{ search }}">
+            
+            <button type="submit">Search</button>
+        </form>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Startup Name</th>
+                <th>Founder</th>
+                <th>Niche</th>
+                <th>Stage</th>
+                <th>Valuation</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for startup in startups %}
+                <tr>
+                    <td><strong>{{ startup.name }}</strong></td>
+                    <td>{{ startup.founder.username }}</td>
+                    <td>{{ startup.niche }}</td>
+                    <td>{{ startup.stage }}</td>
+                    <td>${{ startup.valuation }}</td>
+                    <td>
+                        {% if startup.approved %}
+                            <span class="badge badge-success">✓ Approved</span>
+                        {% else %}
+                            <span class="badge badge-warning">⏳ Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not startup.approved %}
+                            <a href="{% url 'startup_approval' startup.id 'approve' %}" class="btn btn-success" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Approve</a>
+                        {% else %}
+                            <a href="{% url 'startup_approval' startup.id 'reject' %}" class="btn btn-danger" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Reject</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #7f8c8d; padding: 2rem;">No startups found</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

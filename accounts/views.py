@@ -14,6 +14,8 @@ def role_based_redirect(request):
         return redirect('startup_dashboard')
     elif request.user.role == 'MANUFACTURER':
         return redirect('manufacturer_dashboard')
+    elif request.user.role == 'ADMIN':
+        return redirect('admin_dashboard')
     return redirect('home')
 
 

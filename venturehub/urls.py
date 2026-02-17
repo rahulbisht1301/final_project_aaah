@@ -10,4 +10,5 @@ urlpatterns = [
     path('startups/', include('startups.urls')),
     path('investors/', include('investors.urls')),
     path('manufacturers/', include('manufacturers.urls')),
+    path('admin-dashboard/', include('admin_dashboard.urls')),
 ]

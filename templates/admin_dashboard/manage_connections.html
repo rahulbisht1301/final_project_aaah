@@ -1,0 +1,57 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block content %}
+<h2 style="margin-bottom: 1.5rem; color: #2c3e50;">🤝 Manufacturer-Startup Connections</h2>
+
+<div class="card">
+    <div class="search-box">
+        <form method="GET" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <select name="status">
+                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Connections</option>
+                <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>Pending</option>
+                <option value="ACCEPTED" {% if status_filter == 'ACCEPTED' %}selected{% endif %}>Accepted</option>
+                <option value="REJECTED" {% if status_filter == 'REJECTED' %}selected{% endif %}>Rejected</option>
+            </select>
+            
+            <input type="text" name="search" placeholder="Search by startup or company..." value="{{ search }}">
+            
+            <button type="submit">Search</button>
+        </form>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Manufacturer</th>
+                <th>Startup</th>
+                <th>Message</th>
+                <th>Status</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for conn in connections %}
+                <tr>
+                    <td><strong>{{ conn.manufacturer.company_name }}</strong></td>
+                    <td>{{ conn.startup.name }}</td>
+                    <td>{{ conn.message|truncatewords:10 }}</td>
+                    <td>
+                        {% if conn.status == 'PENDING' %}
+                            <span class="badge badge-warning">⏳ Pending</span>
+                        {% elif conn.status == 'ACCEPTED' %}
+                            <span class="badge badge-success">✓ Accepted</span>
+                        {% elif conn.status == 'REJECTED' %}
+                            <span class="badge badge-danger">✗ Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ conn.created_at|date:"M d, Y" }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #7f8c8d; padding: 2rem;">No connections found</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
