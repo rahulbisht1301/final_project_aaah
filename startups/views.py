@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
+from django.core.paginator import Paginator
 from .models import InvestmentApplication, Startup
 from investors.models import InvestorProfile
 from manufacturers.models import ConnectionRequest
@@ -169,26 +170,118 @@ def handle_connection_request(request, request_id, action):
 
 
 @login_required(login_url='startup_login')
-def apply_to_investor(request, investor_id):
+def apply_to_investors(request, investor_id=None):
+    """Allow a startup to pitch to one or more investors.
+
+    If an `investor_id` is provided via URL, that investor will be pre‑selected
+    in the form. Otherwise the form displays all investors and the startup may
+    choose multiple entries.  Submitting the form creates a separate
+    InvestmentApplication for each selected investor.
+    """
     if not request.user.is_startup():
         return redirect('home')
 
     startup = get_object_or_404(Startup, founder=request.user)
-    investor = get_object_or_404(InvestorProfile, id=investor_id)
 
     if request.method == 'POST':
+        # try to pull a list of investor IDs (multiple selection) or single
+        investor_ids = request.POST.getlist('investor_ids')
+        if not investor_ids:
+            # fallback for the single‑id POST; keep compatibility with old
+            # endpoints or forms that sent a single field named investor_id
+            single = request.POST.get('investor_id')
+            if single:
+                investor_ids = [single]
+
+        subject = request.POST.get('subject', '')
         message = request.POST.get('message')
         amount = request.POST.get('amount')
         equity = request.POST.get('equity')
 
-        InvestmentApplication.objects.create(
-            startup=startup,
-            investor=investor,
-            message=message,
-            amount_requested=amount,
-            equity_offered=equity
-        )
-        
-        messages.success(request, 'Investment application submitted successfully!')
+        created = 0
+        for inv_id in investor_ids:
+            try:
+                investor = InvestorProfile.objects.get(id=inv_id)
+            except InvestorProfile.DoesNotExist:
+                continue
+
+            InvestmentApplication.objects.create(
+                startup=startup,
+                investor=investor,
+                subject=subject,
+                message=message,
+                amount_requested=amount,
+                equity_offered=equity,
+            )
+            created += 1
+
+        if created:
+            messages.success(request, f"Investment application{'s' if created != 1 else ''} submitted successfully!")
+        else:
+            messages.error(request, 'No valid investor selected.')
         return redirect('startup_dashboard')
+
+    # GET – render the form
+    investors = InvestorProfile.objects.all().order_by('user__username')
+    selected = None
+    if investor_id:
+        selected = InvestorProfile.objects.filter(id=investor_id).first()
+
+    return render(request, 'startups/apply.html', {
+        'investors': investors,
+        'selected': selected,
+    })
+
+
+@login_required(login_url='startup_login')
+def startup_applications_history(request):
+    """View all investment applications sent by the startup with pagination."""
+    if not request.user.is_startup():
+        return redirect('home')
+
+    startup = get_object_or_404(Startup, founder=request.user)
+    applications = InvestmentApplication.objects.filter(startup=startup).order_by('-created_at')
+
+    # Pagination
+    paginator = Paginator(applications, 10)  # 10 applications per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'startups/applications_history.html', {
+        'page_obj': page_obj,
+        'applications': page_obj,
+    })
+
+
+@login_required(login_url='startup_login')
+def startup_application_detail(request, application_id):
+    """View detailed information of a single investment application."""
+    if not request.user.is_startup():
+        return redirect('home')
+
+    startup = get_object_or_404(Startup, founder=request.user)
+    application = get_object_or_404(InvestmentApplication, id=application_id, startup=startup)
+
+    return render(request, 'startups/application_detail.html', {
+        'application': application,
+    })
+
+
+@login_required(login_url='startup_login')
+def delete_application(request, application_id):
+    """Delete an investment application (only if not ACCEPTED)."""
+    if not request.user.is_startup():
+        return redirect('home')
+
+    startup = get_object_or_404(Startup, founder=request.user)
+    application = get_object_or_404(InvestmentApplication, id=application_id, startup=startup)
+
+    # Only allow deletion if application is still pending
+    if application.status != 'PENDING':
+        messages.error(request, 'Only pending applications can be deleted.')
+        return redirect('startup_application_detail', application_id=application.id)
+
+    application.delete()
+    messages.success(request, 'Application deleted successfully.')
+    return redirect('startup_applications_history')
 

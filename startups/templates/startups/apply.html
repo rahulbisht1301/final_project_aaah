@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="section" style="padding: 40px 20px;">
+    <div style="max-width: 700px; margin: 0 auto;">
+        <div class="card" style="width: 100%; max-width: 100%;">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 28px;">💼</span>
+                </div>
+                <h2 style="margin: 0;">Pitch to Investors</h2>
+                <p style="color: #666; margin-top: 5px;">Select one or more investors and send them your funding request.</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- searchable multi-select component -->
+                <div style="margin-bottom: 15px; position: relative;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Choose Investors *</label>
+                    <div id="investor-selector" class="fake-input" tabindex="0"
+                         style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px; cursor: pointer; min-height: 40px; display: flex; align-items: center; flex-wrap: wrap;">
+                        <span id="placeholder" style="color:#999;">Click to select investors</span>
+                    </div>
+
+                    <!-- hidden actual select used for form submission -->
+                    <select name="investor_ids" id="hidden-investors" multiple style="display:none;">
+                        {% for inv in investors %}
+                        <option value="{{ inv.id }}" {% if selected and inv.id == selected.id %}selected{% endif %}>{{ inv.user.username }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <!-- dropdown with search field -->
+                    <div id="investor-dropdown" style="display:none; position:absolute; z-index:1000; background:#fff; border:1px solid #ccc; width:100%; max-height:240px; overflow:auto; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                        <input type="text" id="investor-search" placeholder="Search investors..."
+                               style="width:100%; padding:10px; border:none; border-bottom:1px solid #ddd; font-size:14px; box-sizing:border-box;">
+                        <ul id="investor-list" style="list-style:none; margin:0; padding:0; max-height:200px; overflow:auto;">
+                            {% for inv in investors %}
+                            <li data-id="{{ inv.id }}" style="padding:10px 14px; cursor:pointer; border-bottom:1px solid #eee;">
+                                {{ inv.user.username }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <small style="color: #666; display:block; margin-top:4px;">You can select multiple investors.</small>
+                </div>
+
+                <script>
+                    (function(){
+                        const selector = document.getElementById('investor-selector');
+                        const dropdown = document.getElementById('investor-dropdown');
+                        const searchInput = document.getElementById('investor-search');
+                        const list = document.getElementById('investor-list');
+                        const hidden = document.getElementById('hidden-investors');
+                        const placeholder = document.getElementById('placeholder');
+
+                        function updateSelector() {
+                            const selectedOptions = Array.from(hidden.selectedOptions);
+                            selector.innerHTML = '';
+                            if (selectedOptions.length === 0) {
+                                selector.appendChild(placeholder);
+                            } else {
+                                selectedOptions.forEach(opt => {
+                                    const chip = document.createElement('span');
+                                    chip.textContent = opt.text;
+                                    chip.style.cssText = 'background:#d4edda; color:#155724; padding:4px 10px; border-radius:12px; margin:2px; font-size:13px;';
+                                    selector.appendChild(chip);
+                                });
+                            }
+                        }
+
+                        function toggleDropdown(show) {
+                            dropdown.style.display = show ? 'block' : 'none';
+                        }
+
+                        selector.addEventListener('click', function(e){
+                            e.stopPropagation();
+                            const show = dropdown.style.display !== 'block';
+                            toggleDropdown(show);
+                            if (show) {
+                                // clear search and reset list items
+                                searchInput.value = '';
+                                Array.from(list.children).forEach(li => li.style.display = 'block');
+                                searchInput.focus();
+                            }
+                        });
+
+                        document.addEventListener('click', function(){
+                            toggleDropdown(false);
+                        });
+
+                        searchInput.addEventListener('input', function(){
+                            const filter = this.value.toLowerCase();
+                            Array.from(list.children).forEach(li => {
+                                const txt = li.textContent.toLowerCase();
+                                li.style.display = txt.indexOf(filter) === -1 ? 'none' : 'block';
+                            });
+                        });
+
+                        list.addEventListener('click', function(e){
+                            if (e.target && e.target.nodeName === 'LI') {
+                                const id = e.target.getAttribute('data-id');
+                                const option = hidden.querySelector('option[value="' + id + '"]');
+                                if (option) {
+                                    option.selected = !option.selected;
+                                }
+                                updateSelector();
+                                updateListStyles();
+                            }
+                        });
+
+                        function updateListStyles() {
+                            Array.from(list.children).forEach(li => {
+                                const opt = hidden.querySelector('option[value="' + li.getAttribute('data-id') + '"]');
+                                if (opt && opt.selected) {
+                                    li.style.background = '#d4edda';
+                                    li.style.color = '#155724';
+                                } else {
+                                    li.style.background = '';
+                                    li.style.color = '';
+                                }
+                            });
+                        }
+
+                        // modify updateSelector to also call updateListStyles
+                        const originalUpdate = updateSelector;
+                        updateSelector = function() {
+                            originalUpdate();
+                            updateListStyles();
+                        };
+
+                        // initialize on page load
+                        updateSelector();
+                        updateListStyles();
+                    })();
+                </script>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Subject</label>
+                    <input type="text" name="subject" placeholder="Short description of your pitch"
+                           style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px;">
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Message / Pitch</label>
+                    <textarea name="message" rows="4" placeholder="Explain why investors should back you..."
+                              style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px; resize: vertical;"></textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Amount Requested ($)</label>
+                        <input type="number" name="amount" placeholder="e.g. 50000"
+                               style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px;">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Equity Offered (%)</label>
+                        <input type="number" step="0.01" name="equity" placeholder="e.g. 10.00"
+                               style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px;">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" style="width: 100%; border: none; cursor: pointer; font-size: 16px; padding: 14px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    Send Application
+                </button>
+            </form>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="{% url 'startup_dashboard' %}" style="color: #666; text-decoration: none;">← Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
