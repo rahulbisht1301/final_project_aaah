@@ -34,6 +34,7 @@ class InvestmentApplication(models.Model):
     startup = models.ForeignKey('Startup', on_delete=models.CASCADE, related_name='applications')
     investor = models.ForeignKey('investors.InvestorProfile', on_delete=models.CASCADE, related_name='applications')
 
+    subject = models.CharField(max_length=200, blank=True)
     message = models.TextField()
     amount_requested = models.DecimalField(max_digits=15, decimal_places=2)
     equity_offered = models.DecimalField(max_digits=5, decimal_places=2)

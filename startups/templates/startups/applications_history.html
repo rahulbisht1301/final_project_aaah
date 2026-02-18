@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero" style="padding: 40px 20px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+    <h1>Investment Applications History</h1>
+    <p>View all your funding applications to investors</p>
+</div>
+
+<div class="section" style="padding: 20px 50px;">
+    {% if applications %}
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <thead>
+                <tr style="background: #f8f9fa; border-bottom: 2px solid #ddd;">
+                    <th style="padding: 12px; text-align: left; font-weight: bold; color: #333;">Investor</th>
+                    <th style="padding: 12px; text-align: left; font-weight: bold; color: #333;">Subject</th>
+                    <th style="padding: 12px; text-align: left; font-weight: bold; color: #333;">Amount Requested</th>
+                    <th style="padding: 12px; text-align: left; font-weight: bold; color: #333;">Equity Offered</th>
+                    <th style="padding: 12px; text-align: left; font-weight: bold; color: #333;">Status</th>
+                    <th style="padding: 12px; text-align: left; font-weight: bold; color: #333;">Submitted</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                <tr style="border-bottom: 1px solid #eee; cursor: pointer;" onclick="window.location='{% url 'startup_application_detail' app.id %}'">
+                    <td style="padding: 12px; color: #333;"><a href="{% url 'startup_application_detail' app.id %}" style="color: #0277bd; text-decoration: none;">{{ app.investor.user.username }}</a></td>
+                    <td style="padding: 12px; color: #333;">{{ app.subject|default:"—" }}</td>
+                    <td style="padding: 12px; color: #333;">${{ app.amount_requested|floatformat:0 }}</td>
+                    <td style="padding: 12px; color: #333;">{{ app.equity_offered }}%</td>
+                    <td style="padding: 12px;">
+                        <span style="padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: bold;
+                            {% if app.status == 'ACCEPTED' %}background: #d4edda; color: #155724;
+                            {% elif app.status == 'REJECTED' %}background: #f8d7da; color: #721c24;
+                            {% elif app.status == 'MORE_INFO' %}background: #d1ecf1; color: #0c5460;
+                            {% else %}background: #fff3cd; color: #856404;{% endif %}">
+                            {{ app.status }}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; color: #666; font-size: 13px;">{{ app.created_at|date:"M d, Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div style="margin-top: 30px; text-align: center;">
+        <div style="display: inline-block;">
+            {% if page_obj.has_previous %}
+            <a href="?page=1" class="btn" style="background: #17a2b8; margin: 5px; padding: 8px 12px; font-size: 12px;">« First</a>
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn" style="background: #17a2b8; margin: 5px; padding: 8px 12px; font-size: 12px;">‹ Previous</a>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span style="background: #28a745; color: white; padding: 8px 12px; margin: 5px; border-radius: 5px; display: inline-block; font-weight: bold;">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}" class="btn" style="background: #6c757d; margin: 5px; padding: 8px 12px; font-size: 12px;">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="btn" style="background: #17a2b8; margin: 5px; padding: 8px 12px; font-size: 12px;">Next ›</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}" class="btn" style="background: #17a2b8; margin: 5px; padding: 8px 12px; font-size: 12px;">Last »</a>
+            {% endif %}
+        </div>
+    </div>
+    <div style="margin-top: 15px; text-align: center; color: #666; font-size: 13px;">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} (Total: {{ page_obj.paginator.count }} applications)
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div style="text-align: center; padding: 60px 20px;">
+        <div style="font-size: 50px; margin-bottom: 15px;">📄</div>
+        <h3 style="color: #666; margin-bottom: 10px;">No applications yet</h3>
+        <p style="color: #999; margin-bottom: 20px;">You haven't sent any funding applications to investors.</p>
+        <a href="{% url 'apply_to_investors' %}" class="btn" style="display: inline-block; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); padding: 10px 20px;">Create Your First Application</a>
+    </div>
+    {% endif %}
+</div>
+
+<div style="text-align: center; padding: 20px;">
+    <a href="{% url 'startup_dashboard' %}" style="color: #666; text-decoration: none;">← Back to Dashboard</a>
+</div>
+
+{% endblock %}

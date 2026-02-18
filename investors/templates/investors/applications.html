@@ -12,6 +12,9 @@
         <div class="card">
             <h3>{{ app.startup.name }}</h3>
             <p><strong>Niche:</strong> {{ app.startup.niche }}</p>
+            {% if app.subject %}
+            <p><strong>Subject:</strong> {{ app.subject }}</p>
+            {% endif %}
             <p><strong>Amount Requested:</strong> ${{ app.amount_requested|floatformat:0 }}</p>
             <p><strong>Equity Offered:</strong> {{ app.equity_offered }}%</p>
             <p><strong>Message:</strong> {{ app.message|truncatewords:20 }}</p>

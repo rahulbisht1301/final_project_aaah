@@ -52,6 +52,16 @@
             <h3>⚙️ Edit Profile</h3>
             <p>Update your startup information, pitch, and contact details.</p>
         </a>
+        <!-- new action: apply to investors -->
+        <a href="{% url 'apply_to_investors' %}" class="card" style="text-decoration: none; color: inherit;">
+            <h3>📨 Pitch to Investors</h3>
+            <p>Select one or more investors and submit a funding request.</p>
+        </a>
+        <!-- application history -->
+        <a href="{% url 'startup_applications_history' %}" class="card" style="text-decoration: none; color: inherit;">
+            <h3>📋 Application History</h3>
+            <p>View all your investment applications and their status.</p>
+        </a>
         <div class="card">
             <h3>📊 Profile Status</h3>
             <p><strong>Approval:</strong> {% if startup.approved %}<span style="color: green;">✓ Approved</span>{% else %}<span style="color: orange;">⏳ Pending</span>{% endif %}</p>
@@ -110,6 +120,9 @@
         {% for app in investment_apps %}
         <div class="card">
             <h3>Application to {{ app.investor.user.username }}</h3>
+            {% if app.subject %}
+            <p><strong>Subject:</strong> {{ app.subject }}</p>
+            {% endif %}
             <p><strong>Amount Requested:</strong> ${{ app.amount_requested|floatformat:0 }}</p>
             <p><strong>Equity Offered:</strong> {{ app.equity_offered }}%</p>
             <p><strong>Status:</strong>
