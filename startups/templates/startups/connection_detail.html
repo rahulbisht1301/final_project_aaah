@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero" style="padding: 40px 20px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+    <h1>Connection Details</h1>
+    <p>Manufacturer information</p>
+</div>
+
+<div class="section" style="padding: 20px 50px;">
+    <div style="max-width: 800px; margin: 0 auto;">
+        <div style="background: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h2 style="margin-bottom: 20px; color: #333;">{{ connection.manufacturer.company_name|default:connection.manufacturer.user.username }}</h2>
+            
+            <!-- Status -->
+            <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <p><strong>Connection Status:</strong>
+                    <span style="padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; margin-left: 10px;
+                        {% if connection.status == 'ACCEPTED' %}background: #d4edda; color: #155724;
+                        {% elif connection.status == 'REJECTED' %}background: #f8d7da; color: #721c24;
+                        {% else %}background: #fff3cd; color: #856404;{% endif %}">
+                        {{ connection.status }}
+                    </span>
+                </p>
+            </div>
+
+            <!-- Manufacturer Details -->
+            <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <p><strong>Contact:</strong> {{ connection.manufacturer.user.email }}</p>
+                <p><strong>Company:</strong> {{ connection.manufacturer.company_name|default:"—" }}</p>
+                <p><strong>Industry:</strong> {{ connection.manufacturer.industry|default:"—" }}</p>
+                <p><strong>Location:</strong> {{ connection.manufacturer.location|default:"—" }}</p>
+                <p><strong>Production Capacity:</strong> {{ connection.manufacturer.production_capacity|default:"—" }}</p>
+                <p><strong>Connected On:</strong> {{ connection.created_at|date:"M d, Y H:i" }}</p>
+            </div>
+
+            <!-- Message -->
+            {% if connection.message %}
+            <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <p><strong>Message:</strong></p>
+                <div style="background: white; border: 1px solid #ddd; border-radius: 5px; padding: 10px; height: 150px; overflow-y: scroll; margin-top: 10px; font-style: italic; color: #666; word-wrap: break-word; white-space: pre-wrap; overflow-wrap: break-word;">
+                    {{ connection.message }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div style="margin-top: 30px; display: flex; gap: 10px;">
+                <a href="{% url 'startup_connection_history' %}" class="btn" style="background: #6c757d; padding: 10px 20px; text-decoration: none; border-radius: 5px; color: white;">← Back to Connections</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="text-align: center; padding: 20px;">
+    <a href="{% url 'startup_dashboard' %}" style="color: #666; text-decoration: none;">← Back to Dashboard</a>
+</div>
+
+{% endblock %}
