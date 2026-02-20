@@ -68,8 +68,7 @@ def admin_dashboard(request):
         'recent_startups': recent_startups,
         'recent_users': recent_users,
         'recent_applications': recent_applications,
-    }
-    
+    }    
     return render(request, 'admin_dashboard/dashboard.html', context)
 
 

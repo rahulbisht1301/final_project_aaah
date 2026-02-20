@@ -14,4 +14,7 @@ urlpatterns = [
     path('applications/', views.startup_applications_history, name='startup_applications_history'),
     path('application/<int:application_id>/', views.startup_application_detail, name='startup_application_detail'),
     path('application/<int:application_id>/delete/', views.delete_application, name='delete_application'),
+    path('connections/', views.startup_connection_history, name='startup_connection_history'),
+    path('connection/<int:connection_id>/', views.startup_connection_detail, name='startup_connection_detail'),
+    path('connection/<int:connection_id>/unfriend/', views.unfriend_connection, name='unfriend_connection'),
 ]

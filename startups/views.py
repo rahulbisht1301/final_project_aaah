@@ -285,3 +285,60 @@ def delete_application(request, application_id):
     messages.success(request, 'Application deleted successfully.')
     return redirect('startup_applications_history')
 
+
+@login_required(login_url='startup_login')
+def startup_connection_history(request):
+    """View all manufacturer connection requests for the startup with pagination."""
+    if not request.user.is_startup():
+        return redirect('home')
+
+    startup = get_object_or_404(Startup, founder=request.user)
+    connections = ConnectionRequest.objects.filter(startup=startup).order_by('-created_at')
+
+    # Pagination
+    paginator = Paginator(connections, 10)  # 10 connections per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'startups/connection_history.html', {
+        'page_obj': page_obj,
+        'connections': page_obj,
+    })
+
+
+@login_required(login_url='startup_login')
+def startup_connection_detail(request, connection_id):
+    """View detailed information about a single connection."""
+    if not request.user.is_startup():
+        return redirect('home')
+
+    startup = get_object_or_404(Startup, founder=request.user)
+    connection = get_object_or_404(ConnectionRequest, id=connection_id, startup=startup)
+
+    return render(request, 'startups/connection_detail.html', {
+        'connection': connection,
+    })
+
+
+@login_required(login_url='startup_login')
+def unfriend_connection(request, connection_id):
+    """Change an accepted connection status to rejected (unfriend)."""
+    if not request.user.is_startup():
+        return redirect('home')
+
+    if request.method != 'POST':
+        return redirect('startup_connection_history')
+
+    startup = get_object_or_404(Startup, founder=request.user)
+    connection = get_object_or_404(ConnectionRequest, id=connection_id, startup=startup)
+
+    # Only allow unfriending if the connection is ACCEPTED
+    if connection.status != 'ACCEPTED':
+        messages.error(request, 'Only accepted connections can be unfriended.')
+        return redirect('startup_connection_history')
+
+    connection.status = 'REJECTED'
+    connection.save()
+    messages.success(request, f'Connection with {connection.manufacturer.company_name} removed.')
+    return redirect('startup_connection_history')
+
